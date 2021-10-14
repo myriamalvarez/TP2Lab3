@@ -2,7 +2,9 @@ package com.example.tp2lab3.model;
 
 import androidx.annotation.NonNull;
 
-public class Usuario {
+import java.io.Serializable;
+
+public class Usuario implements Serializable {
     private long dni;
     private String apellido;
     private String nombre;

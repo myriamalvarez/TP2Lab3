@@ -7,32 +7,61 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.tp2lab3.model.Usuario;
 import com.example.tp2lab3.request.ApiClient;
 import com.example.tp2lab3.ui.registro.RegistroActivity;
 
 public class ViewModelMain extends AndroidViewModel {
-    private Context context;
-    private ApiClient api;
+    Context context;
+    MutableLiveData<Usuario> usuarioM;
+    MutableLiveData<String> mensajeM;
 
     public ViewModelMain(@NonNull Application application) {
         super(application);
         context = application.getApplicationContext();
     }
-    public void logueo(String email, String pass){
-        Usuario res = api.login(context, email, pass);
-
-        if (res != null){
-            Intent i = new Intent(context, RegistroActivity.class);
-            i.putExtra("login", true);
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(i);
-        }else{
-            Toast.makeText(this.context, "El usuario no existe", Toast.LENGTH_SHORT).show();
-            Intent i = new Intent(context, MainActivity.class);
-            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(i);
+    public LiveData<Usuario> getUsuarioM(){
+        if (usuarioM == null){
+            usuarioM = new MutableLiveData<>();
         }
+        return usuarioM;
+    }
+    public LiveData<String> getMensajeM(){
+        if (mensajeM == null){
+            mensajeM = new MutableLiveData<>();
+        }
+        return mensajeM;
+    }
+    public void registrar()
+    {
+        Intent in = new Intent(context, RegistroActivity.class);
+        in.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(in);
+    }
+
+    public void verificar(String mail, String pass)
+    {
+        if(mail != null && pass != null)
+        {
+            Usuario u = ApiClient.login(context, mail, pass);
+
+            if(u != null)
+            {
+                usuarioM.setValue(u);
+            }
+            else
+            {
+                mensajeM.setValue("Datos incorrectos!");
+            }
+
+        }
+        else
+        {
+            mensajeM.setValue("Datos incorrectos!");
+        }
+
     }
 }

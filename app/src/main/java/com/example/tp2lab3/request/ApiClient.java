@@ -7,39 +7,36 @@ import com.example.tp2lab3.model.Usuario;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 public class ApiClient {
 
-    private static File file;
+  /*  private static File file;
 
     private static File conectar(Context context){
         if(file == null){
             file = new File(context.getFilesDir(), "datos.dat");
         }
         return file;
-    }
+    }*/
 
     public static void guardar(Context context, Usuario usuario){
+        File file = new File(context.getFilesDir(), "usuarios.txt");
         try{
-            File fi = conectar(context);
-            FileOutputStream fo = new FileOutputStream(fi);
+            FileOutputStream fo = new FileOutputStream(file);
             BufferedOutputStream bo = new BufferedOutputStream(fo);
-            DataOutputStream dos = new DataOutputStream(bo);
-            dos.writeLong(usuario.getDni());
-            dos.writeUTF(usuario.getApellido());
-            dos.writeUTF(usuario.getNombre());
-            dos.writeUTF(usuario.getMail());
-            dos.writeUTF(usuario.getPassword());
+            ObjectOutputStream objOutput = new ObjectOutputStream(bo);
+            objOutput.writeObject(usuario);
+            objOutput.flush();
+            objOutput.close();
 
-            bo.flush();
-            fo.close();
+            Toast.makeText(context, "Usuario registrado con exito", Toast.LENGTH_LONG).show();
         }catch (FileNotFoundException e){
             Toast.makeText(context, "Archivo no encontrado", Toast.LENGTH_SHORT).show();
         }catch (IOException e){
@@ -47,52 +44,40 @@ public class ApiClient {
         }
     }
     public static Usuario leer(Context context){
-        Usuario usuario = null;
+        Usuario user  = null;
+        File file = new File(context.getFilesDir(), "usuarios.txt");
 
         try{
-            File fl = conectar(context);
-            FileInputStream fi = new FileInputStream(fl);
+            FileInputStream fi = new FileInputStream(file);
             BufferedInputStream bi = new BufferedInputStream(fi);
-            DataInputStream dis = new DataInputStream(bi);
-
-            long dni = dis.readLong();
-            String apellido = dis.readUTF();
-            String nombre = dis.readUTF();
-            String mail = dis.readUTF();
-            String password = dis.readUTF();
-
-            usuario = new Usuario(dni, apellido, nombre, mail, password);
-            fi.close();
+            ObjectInputStream objectInput = new ObjectInputStream(bi);
+            user = (Usuario) objectInput.readObject();
+            objectInput.close();
+            return user;
         }catch (FileNotFoundException e){
             Toast.makeText(context, "Archivo no encontrado", Toast.LENGTH_SHORT).show();
+            return user;
         }catch (IOException e){
             Toast.makeText(context, "Error de E/S", Toast.LENGTH_SHORT).show();
+            return user;
+        }catch (ClassNotFoundException e){
+            Toast.makeText(context, "Class not found Exception", Toast.LENGTH_SHORT).show();
+            return user;
         }
-        return usuario;
+        //return usuario;
     }
     public static Usuario login(Context context, String email, String pass){
-        Usuario usuario = null;
-        try{
-            File fl = conectar(context);
-            FileInputStream fi = new FileInputStream(fl);
-            BufferedInputStream bi = new BufferedInputStream(fi);
-            DataInputStream dis = new DataInputStream(bi);
-
-            long dni = dis.readLong();
-            String apellido = dis.readUTF();
-            String nombre = dis.readUTF();
-            String mail = dis.readUTF();
-            String password = dis.readUTF();
+        Usuario logueado = null;
+        Usuario user = leer(context);
+        long dni = user.getDni();
+        String apellido = user.getApellido();
+        String nombre = user.getNombre();
+        String mail = user.getMail();
+        String password = user.getPassword();
 
             if (email.equals(mail) && pass.equals(password)){
-                usuario = new Usuario(dni, apellido, nombre, mail, password);
+                logueado = new Usuario(dni, apellido, nombre, mail, password);
             }
-            fi.close();
-        }catch (FileNotFoundException e){
-            Toast.makeText(context, "Archivo no encontrado", Toast.LENGTH_SHORT).show();
-        }catch (IOException e){
-            Toast.makeText(context, "Error de E/S", Toast.LENGTH_SHORT).show();
-        }
-        return usuario;
+            return logueado;
     }
 }
